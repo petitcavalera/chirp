@@ -16,7 +16,7 @@ var mongoose = require('mongoose');                         //add for Mongo supp
 
 //connect to Mongo
 if (app.get('env') === 'production') {
-    mongoose.connect('mongodb://test:test@ds064718.mlab.com:64718/test-chirp'); 
+    mongoose.connect('mongodb://testUser:testPassword@ds021989.mlab.com:21989/test-chirp'); 
 }
 else{
     mongoose.connect('mongodb://localhost/test-chirp');             
