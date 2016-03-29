@@ -10,6 +10,13 @@ var session = require('express-session');
 
 var app = express();
 
+app.all('*', function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header('Access-Control-Allow-Credentials', true);
+  next();
+});
+
 //initialize mongoose schemas
 require('./models/models');
 var mongoose = require('mongoose');                         //add for Mongo support
@@ -37,7 +44,10 @@ app.set('view engine', 'ejs');
 app.use(logger('dev'));
 
 app.use(session({
-  secret: 'keyboard cat'
+  secret: 'keyboard cat',
+  cookie:{
+    maxAge : 360000 // one hour in millis
+ }
 }));
 
 app.use(bodyParser.json());

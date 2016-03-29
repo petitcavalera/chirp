@@ -3,6 +3,7 @@ var router = express.Router();
 
 var mongoose = require( 'mongoose' );
 var User = mongoose.model('User');
+var bCrypt = require('bcrypt-nodejs');
 
 //Used for routes that must be authenticated.
 function isAuthenticated (req, res, next) {
@@ -10,7 +11,7 @@ function isAuthenticated (req, res, next) {
     // Passport adds this method to request object. A middleware is allowed to add properties to
     // request and response objects
 
-    //allow all get request methods
+    //allow all get request methods    
     if(req.method === "GET"){
         return next();
     }
@@ -42,13 +43,52 @@ router.route('/')
 //api for a specfic post
 router.route('/:id')
     //gets specified post
-    .get(function(req, res){
+    .get(function(req, res){       
         User.findById(req.param('id'), function(err, post){
             if(err)
                 res.send(err);
             res.json(post);
         });
 
+    })
+    .delete(function(req, res) {
+        console.log(req.param('id'));
+        User.remove({
+            _id: req.param('id')
+        }, function(err) {
+            if (err)
+                res.send(err);
+            res.json("deleted :(");
+        });
+    })
+     .put(function(req, res) {
+       User.findById(req.param('id'), function(err, user){            
+            console.log(user.password);
+            if (!isValidPassword(user, req.body.password)){
+                        console.log('Invalid Password');
+                        res.send({state: 'failure', user:user, message: "Invalid username or password"});
+            }          
+            else{
+                user.username = req.body.username;
+                user.password = createHash(req.body.newPassword);
+                console.log(user.password);
+                user.save(function(err, user){
+                    if(err)
+                        res.send(err);
+
+                    res.json(user);
+                });
+            }
+        });
     });
+   
+
+    var isValidPassword = function(user, password){
+        return bCrypt.compareSync(password, user.password);
+    };
+    // Generates hash using bCrypt
+    var createHash = function(password){
+        return bCrypt.hashSync(password, bCrypt.genSaltSync(10), null);
+    };
 
 module.exports = router;

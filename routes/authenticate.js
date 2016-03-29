@@ -29,8 +29,15 @@ module.exports = function(passport){
     router.get('/signout', function(req, res) {
         req.logout();
         res.redirect('/');
-    });
+    }); 
+    
+     router.route('/getUser')
+    //gets specified post
+    .get(function(req, res){       
+       res.send(req.user);
 
+    });
+    
     return router;
 
 }

@@ -1,6 +1,16 @@
 var app = angular.module('chirpApp', ['ngRoute', 'ngResource']).run(function($rootScope, $http) {
-  $rootScope.authenticated = false;
-  $rootScope.current_user = '';
+    
+  $http.get("auth/getUser").then(function(result) {     
+      if(result.data != ''){
+          $rootScope.authenticated = true;
+          $rootScope.current_user = result.data.username;
+      }else{
+          $rootScope.authenticated = false;
+          $rootScope.current_user = '';
+      }
+     $scope.currentUser = result.data;
+  })
+  
 
   $rootScope.signout = function(){
     $http.get('auth/signout');
@@ -30,6 +40,11 @@ app.config(function($routeProvider){
 		.when('/user', {
 			templateUrl: 'adminuser.html',
 			controller: 'adminUserController'
+		})
+    
+        .when('/user/edit', {
+			templateUrl: 'edituser.html',
+			controller: 'editUserController'
 		});
 });
 
@@ -38,7 +53,10 @@ app.factory('postService', function($resource){
 });
 
 app.factory('userService', function($resource){
-  return $resource('/user/:id');
+  return $resource('/user/:id', null,
+                  {
+      'update':{method:'PUT'}
+  });
 });
 /*
 app.factory('postService', function($http){
@@ -66,10 +84,29 @@ app.controller('mainController', function($rootScope, $scope, postService){
 	    $scope.newPost = {created_by: '', text: '', created_at: ''};
 	  });
 	};
+    
+    $scope.deletePost = function(post){        ;
+       postService.delete({ id: post._id }, function() {
+           $scope.posts = postService.query();
+        });
+    } 
+    
 });
 
-app.controller('adminUserController', function($rootScope, $scope, userService){
+app.controller('adminUserController', function($location, $rootScope, $scope, userService){
     $scope.users = userService.query();
+    
+    $scope.deleteUser = function(user){       
+       userService.delete({ id: user._id }, function() {
+           $scope.users = userService.query();
+        });
+    } 
+    
+    $scope.editUser = function(user){  
+        $rootScope.editedUser = user;
+        $location.path('user/edit');     
+    } 
+    
 	/*$scope.newPost = {created_by: '', text: '', created_at: ''};
 	
    
@@ -83,7 +120,31 @@ app.controller('adminUserController', function($rootScope, $scope, userService){
 	};*/ 
 });
 
+app.controller('editUserController', function($location, $rootScope, $scope, userService){
+    
+    if($rootScope.editedUser === undefined){
+        $location.path('/user');
+    }
+    $scope.user = $rootScope.editedUser;
+    $scope.user.password = '';
+    
+    $scope.save = function (user){ 
+        var userName = user.username;
+        
+         userService.update({ id: user._id }, user,function(data) {
+         if(data.state == 'failure'){
+            $scope.user.username = userName;
+            $scope.error_message = data.message;
+          }
+          else{
+               $location.path('user'); 
 
+          }  
+         
+        });
+    };
+
+});
 
 app.controller('authController', function($scope, $http, $rootScope, $location){
   $scope.user = {username: '', password: ''};
@@ -109,7 +170,7 @@ app.controller('authController', function($scope, $http, $rootScope, $location){
         $rootScope.current_user = data.user.username;
         $location.path('/');
       }
-      else{
+      else{        
         $scope.error_message = data.message;
       }
     });
