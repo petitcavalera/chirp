@@ -45,6 +45,11 @@ app.config(function($routeProvider){
         .when('/user/edit', {
 			templateUrl: 'edituser.html',
 			controller: 'editUserController'
+		})
+    
+        .when('/user/update', {
+			templateUrl: 'updateuser.html',
+			controller: 'updateUserController'
 		});
 });
 
@@ -58,6 +63,14 @@ app.factory('userService', function($resource){
       'update':{method:'PUT'}
   });
 });
+
+app.factory('changePasswordUserService', function($resource){
+  return $resource('/user/changePassword/:id', null,
+                  {
+      'update':{method:'PUT'}
+  });
+});
+
 /*
 app.factory('postService', function($http){
   var baseUrl = "/api/posts";
@@ -94,6 +107,11 @@ app.controller('mainController', function($rootScope, $scope, postService){
 });
 
 app.controller('adminUserController', function($location, $rootScope, $scope, userService){
+    
+     if($rootScope.authenticated == false){
+          $location.path('login');    
+     }
+    
     $scope.users = userService.query();
     
     $scope.deleteUser = function(user){       
@@ -106,6 +124,13 @@ app.controller('adminUserController', function($location, $rootScope, $scope, us
         $rootScope.editedUser = user;
         $location.path('user/edit');     
     } 
+    
+    $scope.updateUser = function(user){  
+        $rootScope.editedUser = user;
+        $location.path('user/update');     
+    } 
+    
+    
     
 	/*$scope.newPost = {created_by: '', text: '', created_at: ''};
 	
@@ -120,7 +145,37 @@ app.controller('adminUserController', function($location, $rootScope, $scope, us
 	};*/ 
 });
 
-app.controller('editUserController', function($location, $rootScope, $scope, userService){
+app.controller('editUserController', function($location, $rootScope, $scope, changePasswordUserService){
+    
+    if($rootScope.editedUser === undefined){
+        $location.path('/user');
+    }
+    $scope.user = $rootScope.editedUser;
+    $scope.user.password = '';
+    
+    $scope.save = function (user){ 
+        var userName = user.username;
+        
+         changePasswordUserService.update({ id: user._id }, user,function(data) {
+         if(data.state == 'failure'){
+            $scope.user.username = userName;
+            $scope.error_message = data.message;
+          }
+          else{
+               $location.path('user'); 
+
+          }  
+         
+        });
+    };
+    
+    $scope.cancelEditing = function(){
+         $location.path('user'); 
+    }
+
+});
+
+app.controller('updateUserController', function($location, $rootScope, $scope, userService){
     
     if($rootScope.editedUser === undefined){
         $location.path('/user');
@@ -143,6 +198,10 @@ app.controller('editUserController', function($location, $rootScope, $scope, use
          
         });
     };
+    
+    $scope.cancelEditing = function(){
+         $location.path('user'); 
+    }
 
 });
 

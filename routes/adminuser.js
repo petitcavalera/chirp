@@ -12,9 +12,9 @@ function isAuthenticated (req, res, next) {
     // request and response objects
 
     //allow all get request methods    
-    if(req.method === "GET"){
-        return next();
-    }
+    //if(req.method === "GET"){
+    //    return next();
+    //}
     if (req.isAuthenticated()){
         return next();
     }
@@ -61,26 +61,46 @@ router.route('/:id')
             res.json("deleted :(");
         });
     })
-     .put(function(req, res) {
-       User.findById(req.param('id'), function(err, user){            
-            console.log(user.password);
-            if (!isValidPassword(user, req.body.password)){
-                        console.log('Invalid Password');
-                        res.send({state: 'failure', user:user, message: "Invalid username or password"});
-            }          
-            else{
+    .put(function(req, res) {
+           User.findById(req.param('id'), function(err, user){            
+                
                 user.username = req.body.username;
-                user.password = createHash(req.body.newPassword);
-                console.log(user.password);
+                user.firstname = req.body.firstname;
+                user.lastname = req.body.lastname;
+                user.password = createHash(req.body.newPassword);               
                 user.save(function(err, user){
                     if(err)
                         res.send(err);
 
                     res.json(user);
                 });
-            }
+                
+            });
         });
-    });
+
+router.route('/changePassword/:id')
+    .put(function(req, res) {
+           User.findById(req.param('id'), function(err, user){            
+                console.log(user.password);
+                if (!isValidPassword(user, req.body.password)){
+                            console.log('Invalid Password');
+                            res.send({state: 'failure', user:user, message: "Invalid username or password"});
+                }          
+                else{
+                    user.username = req.body.username;
+                    user.password = createHash(req.body.newPassword);               
+                    user.save(function(err, user){
+                        if(err)
+                            res.send(err);
+
+                        res.json(user);
+                    });
+                }
+            });
+        });
+
+
+
    
 
     var isValidPassword = function(user, password){
@@ -92,3 +112,4 @@ router.route('/:id')
     };
 
 module.exports = router;
+    

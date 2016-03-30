@@ -2,8 +2,8 @@
 	<h2>Edit User</h2>
 	<p class="text-warning">{{error_message}}</p>
     <label>User Name</label> <input type="username" ng-model="user.username" placeholder="Username" class="form-control"><br>
-    <label>Password</label> <input type="password" ng-model="user.password" placeholder="Password" class="form-control"><br>
-    <label>New Password</label> <input type="password" ng-model="user.newPassword" placeholder="Password" class="form-control"><br>
+    <label>First Name</label> <input type="firstname" ng-model="user.firstname" placeholder="firstname" class="form-control"><br>
+    <label>Last Name</label> <input type="lastname" ng-model="user.lastname" placeholder="lastname" class="form-control"><br>
 	<input type="submit" value="Save" class="btn btn-primary" />
     <input type="button" value="Cancel" class="btn" ng-click="cancelEditing()" />
 </form>
